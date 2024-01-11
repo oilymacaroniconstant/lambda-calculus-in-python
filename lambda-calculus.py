@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+#tristan was hier
 
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
