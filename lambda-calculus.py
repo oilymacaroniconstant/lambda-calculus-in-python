@@ -27,7 +27,7 @@ class Variable(LambdaTerm):
     def __repr__(self): raise NotImplementedError
 
     def __str__(self):
-        return str(self.symbol)
+        return self.symbol
 
     def substitute(self, rules):
         return self
