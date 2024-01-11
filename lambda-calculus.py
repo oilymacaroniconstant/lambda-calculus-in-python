@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#tristan was hier
+# tristan was hier
 
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
@@ -15,29 +15,35 @@ class LambdaTerm:
 
     def reduce(self):
         """Beta-reduce."""
-        raise NotImplementedError
+        # loop/recursie met substitutie functie erop toegepast
 
 
 class Variable(LambdaTerm):
     """Represents a variable."""
 
-    def __init__(self, symbol): raise NotImplementedError
+    def __init__(self, symbol):
+        self.symbol = symbol
 
     def __repr__(self): raise NotImplementedError
 
-    def __str__(self): raise NotImplementedError
+    def __str__(self):
+        return str(self.symbol)
 
-    def substitute(self, rules): raise NotImplementedError
+    def substitute(self, rules):
+        return self
 
 
 class Abstraction(LambdaTerm):
     """Represents a lambda term of the form (λx.M)."""
 
-    def __init__(self, variable, body): raise NotImplementedError
+    def __init__(self, variable, body):
+        self.variable = variable
+        self.body = body
 
     def __repr__(self): raise NotImplementedError
 
-    def __str__(self): raise NotImplementedError
+    def __str__(self):
+        return f'λ{self.variable}.{self.body}'
 
     def __call__(self, argument): raise NotImplementedError
 
@@ -56,3 +62,11 @@ class Application(LambdaTerm):
     def substitute(self, rules): raise NotImplementedError
 
     def reduce(self): raise NotImplementedError
+
+
+x = Variable('x')
+y = Variable('y')
+x.fromstring()
+abstractie = Abstraction(x, y)
+
+print(x)
