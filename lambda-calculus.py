@@ -6,6 +6,16 @@ import string
 
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
+    @staticmethod
+    def fromnumber(number):
+        if number == 0:
+            return nul
+        else:
+            # string maken --> fromstring()
+            return None
+
+    def successor(number):
+        return None
 
     @staticmethod
     def fromstring(string):
@@ -42,6 +52,7 @@ class LambdaTerm:
         return lijst[-1]
 
     def __eq__(self, other):
+        """alpha-equivalence"""
         self = str(self.reduce())
         other = str(other.reduce())
 
@@ -104,7 +115,7 @@ class Abstraction(LambdaTerm):
         return f'λ{self.variable.symbol}.{self.body.symbol}'
 
     def __str__(self):
-        return f'λ{self.variable.symbol}.{self.body.symbol}'
+        return f'λ{self.variable.symbol}:.{self.body.symbol}'
 
     def __call__(self, argument): raise NotImplementedError
 
@@ -129,10 +140,17 @@ class Application(LambdaTerm):
         return f'({str(self.function)} {str(self.argument)})'
 
     def substitute(self):
+        # Check type compatibility first
         if isinstance(self.function, Abstraction):
             return self.function.substitute(self.argument)
         else:
             return Application(self.function.substitute(), self.argument)
+
+
+# Own programming language
+# Natural numbers
+nul = Abstraction(Variable('s'), Abstraction(
+    Variable('z'), Variable('z')))
 
 
 x = Variable('x')
