@@ -5,9 +5,29 @@
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
 
-    def fromstring(self):
+    @staticmethod
+    def fromstring(string):
         """Construct a lambda term from a string."""
-        raise NotImplementedError
+
+        # input: 'x', '(M N)', '(lx.M)'
+        # output: Variable('x'), Application(M, N), Abstraction(x, M) using recursion?
+
+        new_string_list = string.split(' ')
+
+        for i in range(len(new_string_list)):
+            if new_string_list[i][0] == 'l':
+                variable = Variable(new_string_list[i][1])
+                body = LambdaTerm.fromstring(new_string_list[i][3:])
+                new_string_list[i] = Abstraction(variable, body)
+            else:
+                new_string_list[i] = Variable(new_string_list[i])
+
+        for i in range(len(new_string_list)-1):
+            new_string_list[0] = Application(
+                new_string_list[0], new_string_list[1+i])
+
+        output = new_string_list[0]
+        return output
 
     def substitute(self, rules):
         """Substitute values for keys where they occur."""
