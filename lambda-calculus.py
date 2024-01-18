@@ -98,9 +98,6 @@ class LambdaTerm:
         output = new_string_list[0]
         return output
 
-    def HaakjesUitwerken(string):
-        return None
-
     @staticmethod
     def changeSymbols(**kwargs):
         """Change the symbols in your lambda term with new ones. The first argument has to be a lambda term."""
@@ -243,10 +240,11 @@ And = Abstraction(Variable('x'), Abstraction(
 Or = Abstraction(Variable('x'), Abstraction(
     Variable('y'), Application(Application(Variable('x'), T), Variable('y'))))
 negation = Abstraction(Variable('x'), Application(
-    Application(Variable('x'), F), T))
+    Application(Variable('x'), LambdaTerm.changeSymbols(LambdaTerm=F, symbol='a',
+                                                        replacesymbol='c', symbol2='b', replacesymbol2='d')), LambdaTerm.changeSymbols(LambdaTerm=T, symbol='u',
+                                                                                                                                       replacesymbol='e', symbol2='v', replacesymbol2='f')))
 
-print(LambdaTerm.changeSymbols(LambdaTerm=T, symbol='u',
-      replacesymbol='x', symbol2='v', replacesymbol2='k'))
+print(negation(T).reduce() == F)
 
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
