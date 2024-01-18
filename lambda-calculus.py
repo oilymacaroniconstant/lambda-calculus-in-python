@@ -242,45 +242,43 @@ print(negation(T).substitute())
 #      == LambdaTerm.fromstring('x lx.x q'))
 
 
-#haakjes uitwerken
+# haakjes uitwerken
 
-text = input()
-diepte = 0
-haakjes = text.count("(")
-print(haakjes)
-for i in range(haakjes):
-  dieptelijst = []
-  for i in range(len(text)):
-    if text[i] == "(":
-      diepte+=1
-    elif text[i] == ")":
-      diepte-=1
-    dieptelijst.append(diepte)
-  print(dieptelijst)
-  grootste = 0
-  for i in range (len(dieptelijst)):
-    if dieptelijst[i]>grootste:
-      grootste = dieptelijst[i]
-  grootstespot = False
-  grootserange = 0
-  spotlijst = []
-  for i in range (len(dieptelijst)):
-    if dieptelijst[i] == grootste:
-      grootstespot = True
-      spotlijst.append(i)
-    elif dieptelijst[i] != grootste and grootstespot == True:
-      spotlijst.append(i)
-      break
-  print(spotlijst)
-  
-  origineel = ""
-  vervanging = ""
-  for i in range (spotlijst[0], spotlijst[-1]+1):
-    origineel += text[i]
-  print(origineel)
-  vervanging = origineel.lstrip("(").rstrip(")")  
-  
-  text = text.replace(origineel,vervanging)
-  print(text)
-  
-    
+def fromStringParentheses(text):
+    diepte = 0
+    haakjes = text.count("(")
+    print(haakjes)
+    for i in range(haakjes):
+        dieptelijst = []
+        for i in range(len(text)):
+            if text[i] == "(":
+                diepte += 1
+            elif text[i] == ")":
+                diepte -= 1
+                dieptelijst.append(diepte)
+        print(dieptelijst)
+        grootste = 0
+        for i in range(len(dieptelijst)):
+            if dieptelijst[i] > grootste:
+                grootste = dieptelijst[i]
+        grootstespot = False
+        grootserange = 0
+        spotlijst = []
+        for i in range(len(dieptelijst)):
+            if dieptelijst[i] == grootste:
+                grootstespot = True
+                spotlijst.append(i)
+            elif dieptelijst[i] != grootste and grootstespot == True:
+                spotlijst.append(i)
+                break
+        print(spotlijst)
+
+        origineel = ""
+        vervanging = ""
+        for i in range(spotlijst[0], spotlijst[-1]+1):
+            origineel += text[i]
+        print(origineel)
+        vervanging = str(LambdaTerm.fromString(vervanging))
+
+        text = text.replace(origineel, vervanging)
+        print(text)
