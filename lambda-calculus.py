@@ -25,7 +25,6 @@ class LambdaTerm:
         if number == 0:
             return zero
         else:
-            # string maken --> fromstring()
             output = LambdaTerm.successor(zero).reduce()
             for i in range(number-1):
                 output = LambdaTerm.successor(output).reduce()
@@ -100,7 +99,8 @@ class LambdaTerm:
 
     @staticmethod
     def changeSymbols(**kwargs):
-        """Change the symbols in your lambda term with new ones. The first argument has to be a lambda term."""
+        """Change the symbols in your lambda term with new ones. The first argument has to be a lambda term and the following arguments should be the symbol you want to replace and the symbol replacing that symbol."""
+
         keys = list(kwargs)
         values = list(kwargs.values())
         for i in range(1, len(keys), 2):
