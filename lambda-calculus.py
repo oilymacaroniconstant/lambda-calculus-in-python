@@ -1,35 +1,91 @@
 #!/usr/bin/env python3
 import string
 
-# tristan was hier
-
 
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
+
+##########################################################################################################################################
+####### ARITHEMTIC #######
+##########################################################################################################################################
     @staticmethod
-    def fromnumber(number):
+    def successor(number):
+        '''Adds one to the given number and returns its lambda term'''
+
+        if isinstance(number, Abstraction):
+            return Abstraction(Variable('w'), Abstraction(Variable('y'), Abstraction(Variable('x'), Application(Variable('y'), Application(Application(Variable('w'), Variable('y')), Variable('x'))))))(number).reduce()
+        else:
+            return Abstraction(Variable('w'), Abstraction(Variable('y'), Abstraction(Variable('x'), Application(Variable('y'), Application(Application(Variable('w'), Variable('y')), Variable('x'))))))(LambdaTerm.fromNumber(number)).reduce()
+
+    @staticmethod
+    def fromNumber(number):
+        '''Converts a number to its lambda term representation'''
+
         if number == 0:
-            return nul
+            return zero
         else:
             # string maken --> fromstring()
-            return None
-
-    def successor(number):
-        return None
+            output = LambdaTerm.successor(zero).reduce()
+            for i in range(number-1):
+                output = LambdaTerm.successor(output).reduce()
+            return output
 
     @staticmethod
-    def fromstring(string):
+    def toNumber(LambdaTerm):
+        '''Converts a lambda term to its base 10 number representation'''
+        # NOTE: We don't check if LambdaTerm is a valid number defined above.
+
+        if LambdaTerm == zero:
+            return 0
+        else:
+            count = 0
+            for i in str(LambdaTerm):
+                # Our choice of the variable name 'y' is arbitrary. This is due to how we defined the successor function.
+                if i == 'y':
+                    count += 1
+            return count-1
+
+    def __add__(self, other):
+        '''Converts a lambda term to its base 10 number representation'''
+        # NOTE: We don't check if self and other are valid numerical lambda terms as defined above.
+
+        # Apply the successor function 'self' times. Chose this method due to lower computation time.
+        self_number = LambdaTerm.toNumber(self)
+        other_number = LambdaTerm.toNumber(other)
+
+        if self_number < other_number:
+            for i in range(self_number):
+                other = LambdaTerm.successor(other)
+            return other
+        else:
+            for i in range(other_number):
+                self = LambdaTerm.successor(self)
+            return self
+
+    def __mul__(self, other):
+        # multiplication of two numbers x and y
+
+        return (Abstraction(Variable('x'), Abstraction(Variable('w'), Abstraction(Variable('y'), Application(Variable('x'), Application(Variable('w'), Variable('y'))))))(self).reduce())(other).reduce()
+
+
+##########################################################################################################################################
+####### BASIC FUNCTIONS #######
+##########################################################################################################################################
+
+####################################################################################################################################################################################################################################################################################
+
+    @staticmethod
+    def fromString(string):
         """Construct a lambda term from a string."""
 
         # input: 'x', '(M N)', '(lx.M)'
         # output: Variable('x'), Application(M, N), Abstraction(x, M) using recursion?
-
         new_string_list = string.split(' ')
 
         for i in range(len(new_string_list)):
-            if new_string_list[i][0] == 'l':
+            if new_string_list[i][0] == 'λ':
                 variable = Variable(new_string_list[i][1])
-                body = LambdaTerm.fromstring(new_string_list[i][3:])
+                body = LambdaTerm.fromString(new_string_list[i][3:])
                 new_string_list[i] = Abstraction(variable, body)
             else:
                 new_string_list[i] = Variable(new_string_list[i])
@@ -41,18 +97,24 @@ class LambdaTerm:
         output = new_string_list[0]
         return output
 
+    def HaakjesUitwerken(string):
+        return None
+
+    def changeSymbols(LambdaTerm):
+        return None
+
     def reduce(self):
         """Beta-reduce."""
         # loop/recursie met substitutie functie erop toegepast
         lijst = [self.substitute()]
         while True:
             lijst.append(lijst[-1].substitute())
-            if str(lijst[-2]) == str(lijst[-1]):
+            if repr(lijst[-2]) == repr(lijst[-1]):
                 break
         return lijst[-1]
 
     def __eq__(self, other):
-        """alpha-equivalence"""
+        """Alpha-equivalence"""
         self = str(self.reduce())
         other = str(other.reduce())
 
@@ -95,7 +157,7 @@ class Variable(LambdaTerm):
         self.symbol = symbol
 
     def __repr__(self):
-        return self.symbol
+        return f"Variable('{self.symbol}')"
 
     def __str__(self):
         return self.symbol
@@ -112,18 +174,25 @@ class Abstraction(LambdaTerm):
         self.body = body
 
     def __repr__(self):
-        return f'λ{self.variable.symbol}.{self.body.symbol}'
+        return f'Abstraction({repr(self.variable)}, {repr(self.body)})'
 
     def __str__(self):
-        return f'λ{self.variable.symbol}:.{self.body.symbol}'
+        return f'λ{str(self.variable)}.{str(self.body)}'
 
-    def __call__(self, argument): raise NotImplementedError
+    def __call__(self, argument):
+        return Application(self, argument)
 
-    def substitute(self, argument):
-        if self.variable.symbol == self.body.symbol:
-            return argument
+
+####################################################################################################################################
+
+    def substitute(self, argument='0'):
+        if str(argument) != '0':
+            self_repr = repr(self.body).replace(
+                repr(self.variable), repr(argument))
+            return eval(self_repr)
         else:
-            return self.body
+            return Abstraction(self.variable.substitute(), self.body.substitute())
+####################################################################################################################################
 
 
 class Application(LambdaTerm):
@@ -134,29 +203,40 @@ class Application(LambdaTerm):
         self.argument = argument
 
     def __repr__(self):
-        return f'({str(self.function)} {str(self.argument)})'
+        return f'Application({repr(self.function)}, {repr(self.argument)})'
 
     def __str__(self):
         return f'({str(self.function)} {str(self.argument)})'
 
     def substitute(self):
-        # Check type compatibility first
+        # (M N): Check type compatibility first, then if M is an abstraction,
         if isinstance(self.function, Abstraction):
             return self.function.substitute(self.argument)
         else:
-            return Application(self.function.substitute(), self.argument)
+            return Application(self.function.substitute(), self.argument.substitute())
 
 
 # Own programming language
 # Natural numbers
-nul = Abstraction(Variable('s'), Abstraction(
-    Variable('z'), Variable('z')))
+zero = Abstraction(Variable('s'), Abstraction(Variable('z'), Variable('z')))
+I = Abstraction(Variable('x'), Variable('x'))
+
+##########################################################################################################################################
+####### CONDITIONALS #######
+##########################################################################################################################################
+
+T = LambdaTerm.fromString('λx.λy.x')
+F = LambdaTerm.fromString('λx.λy.y')
+
+And = Abstraction(Variable('x'), Abstraction(
+    Variable('y'), Application(Application(Variable('x'), Variable('y')), F)))
+Or = Abstraction(Variable('x'), Abstraction(
+    Variable('y'), Application(Application(Variable('x'), T), Variable('y'))))
+negation = Abstraction(Variable('x'), Application(
+    Application(Variable('x'), F), T))
 
 
-x = Variable('x')
-y = Variable('y')
-abstractie = Abstraction(x, x)
-applicatie = Application(abstractie, y)
+print(negation(T).substitute())
 
-print(LambdaTerm.fromstring('lx.y q ly.y z')
-      == LambdaTerm.fromstring('x lx.x q'))
+# print(LambdaTerm.fromstring('lx.y q ly.y z')
+#      == LambdaTerm.fromstring('x lx.x q'))

@@ -1,3 +1,7 @@
 # Lambda Calculus in Python
 
-## How to use our code?
+## Why?
+
+## What can you do with our code.
+
+## How can you use it.
