@@ -283,4 +283,25 @@ for i in range(haakjes):
   text = text.replace(origineel,vervanging)
   print(text)
   
-    
+
+from sympy import sympify, symbols
+
+def evaluate_expression_with_parentheses(input_str):
+    # Define symbols
+    x, y = symbols('x y')
+
+    # Convert the string to a sympy expression
+    expression = sympify(input_str)
+
+    # Substitute values for variables if needed
+    expression = expression.subs({x: 3, y: 4})
+
+    # Evaluate the expression
+    result = expression.evalf()
+
+    return result
+
+# Example usage:
+input_expression = "(5 + ((x + y) * 2))*10 "
+result = evaluate_expression_with_parentheses(input_expression)
+print(f"Result: {result}")
