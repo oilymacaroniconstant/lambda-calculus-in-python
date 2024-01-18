@@ -101,8 +101,17 @@ class LambdaTerm:
     def HaakjesUitwerken(string):
         return None
 
-    def changeSymbols(LambdaTerm):
-        LambdaTerm_repr = repr(LambdaTerm)
+    @staticmethod
+    def changeSymbols(**kwargs):
+        """Change the symbols in your lambda term with new ones. The first argument has to be a lambda term."""
+        keys = list(kwargs)
+        values = list(kwargs.values())
+        for i in range(1, len(keys), 2):
+            LambdaTerm_repr = repr(values[0])
+            LambdaTerm_repr = LambdaTerm_repr.replace(
+                f"'{values[i]}'", f"'{values[i+1]}'")
+            values[0] = eval(LambdaTerm_repr)
+        return eval(LambdaTerm_repr)
 
     def reduce(self):
         """Beta-reduce."""
@@ -236,8 +245,9 @@ Or = Abstraction(Variable('x'), Abstraction(
 negation = Abstraction(Variable('x'), Application(
     Application(Variable('x'), F), T))
 
+print(LambdaTerm.changeSymbols(LambdaTerm=T, symbol='u',
+      replacesymbol='x', symbol2='v', replacesymbol2='k'))
 
-print(negation(T))
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
 #      == LambdaTerm.fromstring('x lx.x q'))
