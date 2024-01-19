@@ -2,6 +2,8 @@
 from sympy import sympify, symbols
 import string
 
+import time
+
 
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
@@ -35,23 +37,34 @@ class LambdaTerm:
         '''Converts a lambda term to its base 10 number representation'''
         # NOTE: We don't check if LambdaTerm is a valid number defined above.
 
+        # start = time.time()
+        # if LambdaTerm == zero:
+        #     return 0
+        # else:
+        #     count = 0
+        #     for i in str(LambdaTerm):
+        #         # Our choice of the variable name 'y' is arbitrary. This is due to how we defined the successor function.
+        #         if i == 'y':
+        #             count += 1
+        #     end = time.time()
+        #     return count-1
+
+# 1.13x Sneller en algemener
         if LambdaTerm == zero:
             return 0
         else:
-            count = 0
-            for i in str(LambdaTerm):
-                # Our choice of the variable name 'y' is arbitrary. This is due to how we defined the successor function.
-                if i == 'y':
-                    count += 1
-            return count-1
+            count = repr(LambdaTerm).count('Variable')
+            return count-3
 
     def __add__(self, other):
-        '''Converts a lambda term to its base 10 number representation'''
+        '''Adds two numbers represented as lambda terms'''
         # NOTE: We don't check if self and other are valid numerical lambda terms as defined above.
 
-        # Apply the successor function 'self' times. Chose this method due to lower computation time.
+        # Apply the successor function 'self' times. We chose this method instead of the naive method, due to lower computation time.
         self_number = LambdaTerm.toNumber(self)
         other_number = LambdaTerm.toNumber(other)
+
+        # Three times as fast
 
         if self_number < other_number:
             for i in range(self_number):
@@ -62,6 +75,12 @@ class LambdaTerm:
                 self = LambdaTerm.successor(self)
             return self
 
+        # start = time.time()
+        # number = self_number + other_number
+        # lambda_number = LambdaTerm.fromNumber(number)
+        # end = time.time()
+        # return lambda_number, end-start
+
     def __mul__(self, other):
         # multiplication of two numbers x and y
 
@@ -71,8 +90,6 @@ class LambdaTerm:
 ##########################################################################################################################################
 ####### BASIC FUNCTIONS #######
 ##########################################################################################################################################
-
-####################################################################################################################################################################################################################################################################################
 
     @staticmethod
     def fromString(string):
@@ -126,6 +143,7 @@ class LambdaTerm:
 
     def __eq__(self, other):
         """Alpha-equivalence"""
+
         self = str(self.reduce())
         other = str(other.reduce())
 
@@ -251,6 +269,7 @@ conditional_test = Abstraction(Variable('x'), Application(Application(Applicatio
 
 print(negation(T).reduce() == F)
 print(conditional_test(LambdaTerm.fromNumber(1)) == F)
+print(LambdaTerm.toNumber((LambdaTerm.fromNumber(5)*LambdaTerm.fromNumber(10))))
 
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
