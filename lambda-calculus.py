@@ -98,8 +98,12 @@ class LambdaTerm:
         return output
 
     @staticmethod
-    def changeSymbols(**kwargs):
-        """Change the symbols in your lambda term with new ones. The first argument has to be a lambda term and the following arguments should be the symbol you want to replace and the symbol replacing that symbol."""
+    def alphaConversion(**kwargs):
+        """Change the symbols in your lambda term with new ones.\n
+        \n
+        The first argument has to be a lambda term and the following arguments should be the symbol you want to replace and the symbol replacing that symbol.\n
+        \n
+        Example: LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='e', symbol2='b', replacesymbol2='f')"""
 
         keys = list(kwargs)
         values = list(kwargs.values())
@@ -187,10 +191,7 @@ class Abstraction(LambdaTerm):
         return f'λ{str(self.variable)}.{str(self.body)}'
 
     def __call__(self, argument):
-        return Application(self, argument)
-
-
-####################################################################################################################################
+        return Application(self, argument).reduce()
 
     def substitute(self, argument='0'):
         if str(argument) != '0':
@@ -199,7 +200,6 @@ class Abstraction(LambdaTerm):
             return eval(self_repr)
         else:
             return Abstraction(self.variable.substitute(), self.body.substitute())
-####################################################################################################################################
 
 
 class Application(LambdaTerm):
@@ -232,19 +232,25 @@ I = Abstraction(Variable('x'), Variable('x'))
 ####### CONDITIONALS #######
 ##########################################################################################################################################
 
-T = LambdaTerm.fromString('λu.λv.u')
+T = LambdaTerm.fromString('λc.λd.c')
 F = LambdaTerm.fromString('λa.λb.b')
 
 And = Abstraction(Variable('x'), Abstraction(
-    Variable('y'), Application(Application(Variable('x'), Variable('y')), F)))
+    Variable('y'), Application(Application(Variable('x'), Variable('y')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a',
+                                                                                                     replacesymbol='e', symbol2='b', replacesymbol2='f'))))
 Or = Abstraction(Variable('x'), Abstraction(
-    Variable('y'), Application(Application(Variable('x'), T), Variable('y'))))
+    Variable('y'), Application(Application(Variable('x'), LambdaTerm.alphaConversion(LambdaTerm=T, symbol='c', replacesymbol='k', symbol2='d', replacesymbol2='l')), Variable('y'))))
 negation = Abstraction(Variable('x'), Application(
-    Application(Variable('x'), LambdaTerm.changeSymbols(LambdaTerm=F, symbol='a',
-                                                        replacesymbol='c', symbol2='b', replacesymbol2='d')), LambdaTerm.changeSymbols(LambdaTerm=T, symbol='u',
-                                                                                                                                       replacesymbol='e', symbol2='v', replacesymbol2='f')))
+    Application(Variable('x'), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a',
+                                                          replacesymbol='g', symbol2='b', replacesymbol2='h')), LambdaTerm.alphaConversion(LambdaTerm=T, symbol='c',
+                                                                                                                                           replacesymbol='i', symbol2='d', replacesymbol2='j')))
+# 0: True, other numbers are false.
+conditional_test = Abstraction(Variable('x'), Application(Application(Application(Variable('x'), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='m', symbol2='b', replacesymbol2='n')),
+                               LambdaTerm.alphaConversion(LambdaTerm=negation, symbol='x', replacesymbol='o')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='p', symbol2='b', replacesymbol2='q')))
+
 
 print(negation(T).reduce() == F)
+print(conditional_test(LambdaTerm.fromNumber(1)) == F)
 
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
