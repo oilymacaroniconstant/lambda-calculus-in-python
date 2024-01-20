@@ -4,6 +4,8 @@ import string
 
 import time
 
+used_letters = []
+
 
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
@@ -91,6 +93,7 @@ class LambdaTerm:
 ##########################################################################################################################################
 ####### BASIC FUNCTIONS #######
 ##########################################################################################################################################
+
 
     @staticmethod
     def fromString(string):
@@ -264,7 +267,7 @@ class Application(LambdaTerm):
 
 # Own programming language
 # Natural numbers
-zero = Abstraction(Variable('s'), Abstraction(Variable('z'), Variable('z')))
+zero = Abstraction(Variable('s'), Abstraction(Variable('f'), Variable('f')))
 I = Abstraction(Variable('x'), Variable('x'))
 successor = Abstraction(Variable('w'), Abstraction(Variable('y'), Abstraction(Variable('x'), Application(
     Variable('y'), Application(Application(Variable('w'), Variable('y')), Variable('x'))))))
@@ -286,28 +289,44 @@ negation = Abstraction(Variable('x'), Application(
                                                           replacesymbol='g', symbol2='b', replacesymbol2='h')), LambdaTerm.alphaConversion(LambdaTerm=T, symbol='c',
                                                                                                                                            replacesymbol='i', symbol2='d', replacesymbol2='j')))
 # 0: True, other numbers are false.
-conditional_test = Abstraction(Variable('x'), Application(Application(Application(Variable('x'), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='m', symbol2='b', replacesymbol2='n')),
-                               LambdaTerm.alphaConversion(LambdaTerm=negation, symbol='x', replacesymbol='o')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='p', symbol2='b', replacesymbol2='q')))
+conditional_test = Abstraction(Variable('i'), Application(Application(Application(Variable('i'), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='j', symbol2='b', replacesymbol2='k')),
+                               LambdaTerm.alphaConversion(LambdaTerm=negation, symbol='x', replacesymbol='l')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='m', symbol2='b', replacesymbol2='o')))
 
 # phi generates from the pair p = (n,n-1) the pair (n+1,n-1)
-phi = LambdaTerm.fromString(f'λp.λz.((z ({successor} (p {T}))) (p {T}))')
+# uses symbols = w,x,y,z,p,c,d
+phi = LambdaTerm.fromString(
+    f'λp.λz.((z ({successor} (p {T}))) (p {T}))')
 
 # the predecessor of a number n. Applies the phi n times to (λz.z00) and then selects the second member of the pair
-P = LambdaTerm.fromString(f'(λn.((n {phi}) λz.((z {zero}) {zero})) {F})')
+# uses symbols = w,x,y,z,p,c,d,n,a,b,e,f,s
+P = LambdaTerm.fromString(
+    f'(λn.((n {phi}) λe.((e {zero}) {zero})) {F})')
 
 
 ##########################################################################################################################################
 ####### RECURSION #######
 ##########################################################################################################################################
 
-recursion = LambdaTerm.fromString('(λa.λb.(a (b b)) λb.(a (b b)))')
+recursion = LambdaTerm.fromString('λg.(λh.(g (h h)) λh.(g (h h)))')
+
+# uses symbols = w,x,y,z,p,c,d,n,a,b,e,f,s,g,h,
 recursive_sum = LambdaTerm.fromString(
     f'λr.λn.((({conditional_test} n) {zero}) ((n {successor}) (r ({P} n))))')
+
+
+p, q, t, u, v
 
 # print(negation(T).reduce() == F)
 # print(conditional_test(LambdaTerm.fromNumber(1)) == F)
 print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
       == LambdaTerm.fromNumber(2))
+
+# Reduce() doesn't work with recursion. Recursion depth.
+print(Application(recursion, Variable('g')).substitute(
+).substitute())
+
+print(Application(Application(recursion, recursive_sum),
+      LambdaTerm.fromNumber(1)).substitute())
 
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
@@ -354,3 +373,7 @@ print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
 
 #     text = text.replace(origineel, vervanging)
 #     print(text)
+
+
+new_zero = LambdaTerm.alphaConversion(
+    LambdaTerm=zero, symbol='s', replacesymbol='p', symbol2='f', replacesymbol2='q')
