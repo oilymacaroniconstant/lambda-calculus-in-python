@@ -11,6 +11,7 @@ class LambdaTerm:
 ##########################################################################################################################################
 ####### ARITHEMTIC #######
 ##########################################################################################################################################
+
     @staticmethod
     def successor(number):
         '''Adds one to the given number and returns its lambda term'''
@@ -97,22 +98,45 @@ class LambdaTerm:
 
         # input: 'x', '(M N)', '(lx.M)'
         # output: Variable('x'), Application(M, N), Abstraction(x, M) using recursion?
-        new_string_list = string.split(' ')
+        # new_string_list = string.split(' ')
 
-        for i in range(len(new_string_list)):
-            if new_string_list[i][0] == 'λ':
-                variable = Variable(new_string_list[i][1])
-                body = LambdaTerm.fromString(new_string_list[i][3:])
-                new_string_list[i] = Abstraction(variable, body)
-            else:
-                new_string_list[i] = Variable(new_string_list[i])
+        # for i in range(len(new_string_list)):
+        #     if new_string_list[i][0] == 'λ':
+        #         variable = Variable(new_string_list[i][1])
+        #         body = LambdaTerm.fromString(new_string_list[i][3:])
+        #         new_string_list[i] = Abstraction(variable, body)
+        #     else:
+        #         new_string_list[i] = Variable(new_string_list[i])
 
-        for i in range(len(new_string_list)-1):
-            new_string_list[0] = Application(
-                new_string_list[0], new_string_list[1+i])
+        # for i in range(len(new_string_list)-1):
+        #     new_string_list[0] = Application(
+        #         new_string_list[0], new_string_list[1+i])
 
-        output = new_string_list[0]
-        return output
+        # output = new_string_list[0]
+        # return output
+
+        def fromStringtoRepr(string2):
+            for i, j in enumerate(string2):
+                if j == 'λ':
+                    return f"Abstraction(Variable('{string2[i+1]}'), {fromStringtoRepr(string2[i+3:])})"
+                elif j == '(':
+                    tracker = 0
+                    print('jep')
+                    for k, l in enumerate(string2[i+1:-1]):
+                        if l == '(':
+                            tracker += 1
+                            print(tracker)
+                        elif l == ')':
+                            tracker -= 1
+                            print(tracker)
+                        elif l == ' ':
+                            if tracker == 0:
+                                print(tracker)
+                                return f"Application({fromStringtoRepr(string2[i+1:k])}, {fromStringtoRepr(string2[k+1:-1])})"
+
+                else:
+                    return f"Variable('{j}')"
+        return eval(fromStringtoRepr(string))
 
     @staticmethod
     def alphaConversion(**kwargs):
@@ -267,9 +291,9 @@ conditional_test = Abstraction(Variable('x'), Application(Application(Applicatio
                                LambdaTerm.alphaConversion(LambdaTerm=negation, symbol='x', replacesymbol='o')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='p', symbol2='b', replacesymbol2='q')))
 
 
-print(negation(T).reduce() == F)
-print(conditional_test(LambdaTerm.fromNumber(1)) == F)
-print(LambdaTerm.toNumber((LambdaTerm.fromNumber(5)*LambdaTerm.fromNumber(10))))
+# print(negation(T).reduce() == F)
+# print(conditional_test(LambdaTerm.fromNumber(1)) == F)
+print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.z)'))
 
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
