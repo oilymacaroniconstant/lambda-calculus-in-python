@@ -121,18 +121,14 @@ class LambdaTerm:
                     return f"Abstraction(Variable('{string2[i+1]}'), {fromStringtoRepr(string2[i+3:])})"
                 elif j == '(':
                     tracker = 0
-                    print('jep')
-                    for k, l in enumerate(string2[i+1:-1]):
+                    for k, l in enumerate(string2[i+1:]):
                         if l == '(':
                             tracker += 1
-                            print(tracker)
                         elif l == ')':
                             tracker -= 1
-                            print(tracker)
                         elif l == ' ':
                             if tracker == 0:
-                                print(tracker)
-                                return f"Application({fromStringtoRepr(string2[i+1:k])}, {fromStringtoRepr(string2[k+1:-1])})"
+                                return f"Application({fromStringtoRepr(string2[i+1:k+1])}, {fromStringtoRepr(string2[k+2:-1])})"
 
                 else:
                     return f"Variable('{j}')"
@@ -150,6 +146,7 @@ class LambdaTerm:
         values = list(kwargs.values())
         for i in range(1, len(keys), 2):
             LambdaTerm_repr = repr(values[0])
+            # We want to replace the letters in quotation marks: 'a', 'x' etc.
             LambdaTerm_repr = LambdaTerm_repr.replace(
                 f"'{values[i]}'", f"'{values[i+1]}'")
             values[0] = eval(LambdaTerm_repr)
@@ -157,7 +154,7 @@ class LambdaTerm:
 
     def reduce(self):
         """Beta-reduce."""
-        # loop/recursie met substitutie functie erop toegepast
+        # loop/recursion while applying the substitute function. If the previous substitute gives the same one as the current, then return (non-reducible).
         lijst = [self.substitute()]
         while True:
             lijst.append(lijst[-1].substitute())
@@ -269,6 +266,8 @@ class Application(LambdaTerm):
 # Natural numbers
 zero = Abstraction(Variable('s'), Abstraction(Variable('z'), Variable('z')))
 I = Abstraction(Variable('x'), Variable('x'))
+successor = Abstraction(Variable('w'), Abstraction(Variable('y'), Abstraction(Variable('x'), Application(
+    Variable('y'), Application(Application(Variable('w'), Variable('y')), Variable('x'))))))
 
 ##########################################################################################################################################
 ####### CONDITIONALS #######
@@ -290,10 +289,25 @@ negation = Abstraction(Variable('x'), Application(
 conditional_test = Abstraction(Variable('x'), Application(Application(Application(Variable('x'), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='m', symbol2='b', replacesymbol2='n')),
                                LambdaTerm.alphaConversion(LambdaTerm=negation, symbol='x', replacesymbol='o')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='p', symbol2='b', replacesymbol2='q')))
 
+# phi generates from the pair p = (n,n-1) the pair (n+1,n-1)
+phi = LambdaTerm.fromString(f'λp.λz.((z ({successor} (p {T}))) (p {T}))')
+
+# the predecessor of a number n. Applies the phi n times to (λz.z00) and then selects the second member of the pair
+P = LambdaTerm.fromString(f'(λn.((n {phi}) λz.((z {zero}) {zero})) {F})')
+
+
+##########################################################################################################################################
+####### RECURSION #######
+##########################################################################################################################################
+
+recursion = LambdaTerm.fromString('(λa.λb.(a (b b)) λb.(a (b b)))')
+recursive_sum = LambdaTerm.fromString(
+    f'λr.λn.((({conditional_test} n) {zero}) ((n {successor}) (r ({P} n))))')
 
 # print(negation(T).reduce() == F)
 # print(conditional_test(LambdaTerm.fromNumber(1)) == F)
-print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.z)'))
+print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
+      == LambdaTerm.fromNumber(2))
 
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
