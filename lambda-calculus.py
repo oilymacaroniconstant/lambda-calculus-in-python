@@ -35,12 +35,6 @@ class LambdaTerm:
                 output = LambdaTerm.successor(output).reduce()
             return output
 
-    @staticmethod
-    def toNumber(LambdaTerm):
-        '''Converts a lambda term to its base 10 number representation'''
-        # NOTE: We don't check if LambdaTerm is a valid number defined above.
-
-        # start = time.time()
         # if LambdaTerm == zero:
         #     return 0
         # else:
@@ -49,10 +43,15 @@ class LambdaTerm:
         #         # Our choice of the variable name 'y' is arbitrary. This is due to how we defined the successor function.
         #         if i == 'y':
         #             count += 1
-        #     end = time.time()
         #     return count-1
 
-# 1.13x Sneller en algemener
+        # 1.13x Sneller en algemener
+
+    @staticmethod
+    def toNumber(LambdaTerm):
+        '''Converts a lambda term to its base 10 number representation'''
+        # NOTE: We don't check if LambdaTerm is a valid number defined above.
+
         if LambdaTerm == zero:
             return 0
         else:
@@ -63,11 +62,9 @@ class LambdaTerm:
         '''Adds two numbers represented as lambda terms'''
         # NOTE: We don't check if self and other are valid numerical lambda terms as defined above.
 
-        # Apply the successor function 'self' times. We chose this method instead of the naive method, due to lower computation time.
+        # Apply the successor function 'self' times. We chose this method instead of the naive method, due to lower computation time. Three times as fast than the one below.
         self_number = LambdaTerm.toNumber(self)
         other_number = LambdaTerm.toNumber(other)
-
-        # Three times as fast
 
         if self_number < other_number:
             for i in range(self_number):
@@ -78,11 +75,12 @@ class LambdaTerm:
                 self = LambdaTerm.successor(self)
             return self
 
-        # start = time.time()
+        # self_number = LambdaTerm.toNumber(self)
+        # other_number = LambdaTerm.toNumber(other)
+
         # number = self_number + other_number
         # lambda_number = LambdaTerm.fromNumber(number)
-        # end = time.time()
-        # return lambda_number, end-start
+        # return lambda_number
 
     def __mul__(self, other):
         # multiplication of two numbers x and y
@@ -94,12 +92,6 @@ class LambdaTerm:
 ####### BASIC FUNCTIONS #######
 ##########################################################################################################################################
 
-    @staticmethod
-    def fromString(string):
-        """Construct a lambda term from a string."""
-
-        # input: 'x', '(M N)', '(lx.M)'
-        # output: Variable('x'), Application(M, N), Abstraction(x, M) using recursion?
         # new_string_list = string.split(' ')
 
         # for i in range(len(new_string_list)):
@@ -117,6 +109,10 @@ class LambdaTerm:
         # output = new_string_list[0]
         # return output
 
+
+    @staticmethod
+    def fromString(string):
+        """Construct a lambda term from a string."""
         def fromStringtoRepr(string2):
             for i, j in enumerate(string2):
                 if j == 'λ':
@@ -156,13 +152,28 @@ class LambdaTerm:
 
     def reduce(self):
         """Beta-reduce."""
-        # loop/recursion while applying the substitute function. If the previous substitute gives the same one as the current, then return (non-reducible).
+        # loop/recursion while applying the substitute function. If the previous substitute gives the same one as the current, then return (i.e. if it is nonreducible).
         lijst = [self.substitute()]
         while True:
             lijst.append(lijst[-1].substitute())
             if repr(lijst[-2]) == repr(lijst[-1]):
                 break
         return lijst[-1]
+
+    def __eq__(self, other):
+        self = str(self.reduce())
+        other = str(other.reduce())
+        if len(self) != len(other):
+            return False
+        lijst = []
+        for i in range(len(self)):
+            lijst.append([self[i], other[i]])
+            if i > 0:
+                for j in range(i-1):
+                    if lijst[j][0] == self[i] and lijst[j][1] != other[i]:
+                        return False
+
+        return True
 
     def __eq__(self, other):
         """Alpha-equivalence"""
@@ -219,7 +230,7 @@ class Variable(LambdaTerm):
 
 
 class Abstraction(LambdaTerm):
-    """Represents a lambda term of the form (λx.M)."""
+    """Represents a lambda term of the form λx.M."""
 
     def __init__(self, variable, body):
         self.variable = variable
@@ -235,6 +246,8 @@ class Abstraction(LambdaTerm):
         return Application(self, argument).reduce()
 
     def substitute(self, argument='0'):
+        # λx.M: Check if an argument was given. If an argument was given, then replace the body of the abstraction by the argument and return only that body. Else return itself with its argument reduced (if possible).
+
         if str(argument) != '0':
             self_repr = repr(self.body).replace(
                 repr(self.variable), repr(argument))
@@ -257,7 +270,8 @@ class Application(LambdaTerm):
         return f'({str(self.function)} {str(self.argument)})'
 
     def substitute(self):
-        # (M N): Check type compatibility first, then if M is an abstraction,
+        # (M N): Check type compatibility first: argument is only substitutable if M is an abstraction. If M is an abstraction, substitute the argument. Else return itself with its arguments reduced (if possible).
+
         if isinstance(self.function, Abstraction):
             return self.function.substitute(self.argument)
         else:
@@ -271,9 +285,11 @@ I = Abstraction(Variable('x'), Variable('x'))
 successor = Abstraction(Variable('w'), Abstraction(Variable('y'), Abstraction(Variable('x'), Application(
     Variable('y'), Application(Application(Variable('w'), Variable('y')), Variable('x'))))))
 
-##########################################################################################################################################
+
+######################################################################################################
 ####### CONDITIONALS #######
-##########################################################################################################################################
+######################################################################################################
+
 
 T = LambdaTerm.fromString('λc.λd.c')
 F = LambdaTerm.fromString('λa.λb.b')
@@ -302,9 +318,9 @@ P = LambdaTerm.fromString(
     f'(λn.((n {phi}) λe.((e {zero}) {zero})) {F})')
 
 
-##########################################################################################################################################
+######################################################################################################
 ####### RECURSION #######
-##########################################################################################################################################
+######################################################################################################
 
 recursion = LambdaTerm.fromString('λg.(λh.(g (h h)) λh.(g (h h)))')
 
@@ -313,19 +329,20 @@ recursive_sum = LambdaTerm.fromString(
     f'λr.λn.((({conditional_test} n) {zero}) ((n {successor}) (r ({P} n))))')
 
 
-p, q, t, u, v
-
 # print(negation(T).reduce() == F)
 # print(conditional_test(LambdaTerm.fromNumber(1)) == F)
-print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
-      == LambdaTerm.fromNumber(2))
+# print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
+#       == LambdaTerm.fromNumber(100))
+
+print(LambdaTerm.fromNumber(100)
+      == LambdaTerm.fromNumber(100))
 
 # Reduce() doesn't work with recursion. Recursion depth.
 print(Application(recursion, Variable('g')).substitute(
 ).substitute())
 
-print(Application(Application(recursion, recursive_sum),
-      LambdaTerm.fromNumber(1)).substitute())
+# print(Application(Application(recursion, recursive_sum),
+#       LambdaTerm.fromNumber(1)).substitute())
 
 
 # print(LambdaTerm.fromstring('lx.y q ly.y z')
@@ -378,17 +395,5 @@ new_zero = LambdaTerm.alphaConversion(
     LambdaTerm=zero, symbol='s', replacesymbol='p', symbol2='f', replacesymbol2='q')
 
 
-def __eq__(a, b):
-    if len(a) != len(b):
-        return False
-    lijst = []
-    for i in range(len(a)):
-        lijst.append([a[i], b[i]])
-        if i > 1:
-            for j in range(i-1):
-                if lijst[j][0] == a[i] and lijst[j][1] != b[i]:
-                    return False
-    return True
-
-
-print(__eq__(text1, text2))
+# 1. 8.893013000488281e-05, 0.00040221214294433594
+# 2. 9.608268737792969e-05, 0.004765033721923828 8% langzamer, 1000% langzamer
