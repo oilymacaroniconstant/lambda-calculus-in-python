@@ -109,7 +109,6 @@ class LambdaTerm:
         # output = new_string_list[0]
         # return output
 
-
     @staticmethod
     def fromString(string):
         """Construct a lambda term from a string."""
@@ -172,7 +171,6 @@ class LambdaTerm:
                 for j in range(i-1):
                     if lijst[j][0] == self[i] and lijst[j][1] != other[i]:
                         return False
-
         return True
 
     def __eq__(self, other):
@@ -329,17 +327,18 @@ recursive_sum = LambdaTerm.fromString(
     f'λr.λn.((({conditional_test} n) {zero}) ((n {successor}) (r ({P} n))))')
 
 
-# print(negation(T).reduce() == F)
-# print(conditional_test(LambdaTerm.fromNumber(1)) == F)
-# print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
-#       == LambdaTerm.fromNumber(100))
-
 print(LambdaTerm.fromNumber(100)
       == LambdaTerm.fromNumber(100))
 
 # Reduce() doesn't work with recursion. Recursion depth.
 print(Application(recursion, Variable('g')).substitute(
 ).substitute())
+
+
+# print(negation(T).reduce() == F)
+# print(conditional_test(LambdaTerm.fromNumber(1)) == F)
+# print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
+#       == LambdaTerm.fromNumber(100))
 
 # print(Application(Application(recursion, recursive_sum),
 #       LambdaTerm.fromNumber(1)).substitute())
