@@ -306,16 +306,3 @@ input_expression = "(5 + ((x + y) * 2))*10 "
 result = evaluate_expression_with_parentheses(input_expression)
 print(f"Result: {result}")
 
-#hatsa
-def __eq__ (a,b):
-  if len(a) != len(b):
-    return False
-  lijst = []
-  for i in range (len(a)):
-    lijst.append([a[i],b[i]])
-    if i > 1:
-      for j in range (i-1):
-        if lijst[j][0] == a[i] and lijst[j][1] != b[i]:
-          return False
-  return True
-print(__eq__(text1,text2))   
