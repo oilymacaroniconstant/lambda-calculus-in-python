@@ -225,7 +225,10 @@ successor = LambdaTerm.fromString('λw.λy.λx.(y ((w y) x))')
 ####### CONDITIONALS #######
 ######################################################################################################
 
+# True
 T = LambdaTerm.fromString('λc.λd.c')
+
+# False
 F = LambdaTerm.fromString('λa.λb.b')
 
 # λx.(λy.((x y) F))
