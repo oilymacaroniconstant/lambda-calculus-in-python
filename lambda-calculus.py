@@ -1,14 +1,87 @@
-#!/usr/bin/env python3
-from sympy import sympify, symbols
 import string
-
 import time
-
-used_letters = []
 
 
 class LambdaTerm:
     """Abstract Base Class for lambda terms."""
+
+
+##########################################################################################################################################
+####### BASIC FUNCTIONS #######
+##########################################################################################################################################
+
+    @staticmethod
+    def fromString(string):
+        """Construct a lambda term from a string."""
+
+        def fromStringtoRepr(string2):
+            for i, j in enumerate(string2):
+                if j == 'λ':
+                    return f"Abstraction(Variable('{string2[i+1]}'), {fromStringtoRepr(string2[i+3:])})"
+                elif j == '(':
+                    tracker = 0
+                    for k, l in enumerate(string2[i+1:]):
+                        if l == '(':
+                            tracker += 1
+                        elif l == ')':
+                            tracker -= 1
+                        elif l == ' ':
+                            if tracker == 0:
+                                return f"Application({fromStringtoRepr(string2[i+1:k+1])}, {fromStringtoRepr(string2[k+2:-1])})"
+
+                else:
+                    return f"Variable('{j}')"
+
+        return eval(fromStringtoRepr(string))
+
+    @staticmethod
+    def alphaConversion(**kwargs):
+        """Change the symbols in your lambda term with new ones.\n
+        \n
+        The first argument has to be a lambda term and the following arguments should be the symbols you want to replace and the symbols replacing that symbol in alternating fashion.\n
+        \n
+        Example: LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='e', symbol2='b', replacesymbol2='f')"""
+
+        keys = list(kwargs)
+        values = list(kwargs.values())
+
+        for i in range(1, len(keys), 2):
+            LambdaTerm_repr = repr(values[0])
+            # We want to replace the letters in quotation marks: 'a', 'x' etc.
+            LambdaTerm_repr = LambdaTerm_repr.replace(
+                f"'{values[i]}'", f"'{values[i+1]}'")
+            values[0] = eval(LambdaTerm_repr)
+
+        return eval(LambdaTerm_repr)
+
+    def reduce(self):
+        """Beta-reduce."""
+
+        # loop/recursion while applying the substitute function. If the previous substitute gives the same one as the current, then return (i.e. if it is nonreducible).
+
+        lijst = [self.substitute()]
+        while True:
+            lijst.append(lijst[-1].substitute())
+            if repr(lijst[-2]) == repr(lijst[-1]):
+                break
+        return lijst[-1]
+
+    def __eq__(self, other):
+        self = str(self.reduce())
+        other = str(other.reduce())
+        if len(self) != len(other):
+            return False
+        lijst = []
+        for i in range(len(self)):
+            lijst.append([self[i], other[i]])
+            if i > 0:
+                for j in range(i-1):
+                    if lijst[j][0] == self[i] and lijst[j][1] != other[i]:
+                        return False
+                    elif lijst[j][0] != self[i] and lijst[j][1] == other[i]:
+                        return False
+        return True
+
 
 ##########################################################################################################################################
 ####### ARITHEMTIC #######
@@ -35,22 +108,10 @@ class LambdaTerm:
                 output = LambdaTerm.successor(output).reduce()
             return output
 
-        # if LambdaTerm == zero:
-        #     return 0
-        # else:
-        #     count = 0
-        #     for i in str(LambdaTerm):
-        #         # Our choice of the variable name 'y' is arbitrary. This is due to how we defined the successor function.
-        #         if i == 'y':
-        #             count += 1
-        #     return count-1
-
-        # 1.13x Sneller en algemener
-
     @staticmethod
     def toNumber(LambdaTerm):
         '''Converts a lambda term to its base 10 number representation'''
-        # NOTE: We don't check if LambdaTerm is a valid number defined above.
+        # NOTE: It doesn't check if LambdaTerm is a valid number defined above.
 
         if LambdaTerm == zero:
             return 0
@@ -60,9 +121,10 @@ class LambdaTerm:
 
     def __add__(self, other):
         '''Adds two numbers represented as lambda terms'''
-        # NOTE: We don't check if self and other are valid numerical lambda terms as defined above.
+        # NOTE: It doesn't check if self and other are valid numerical lambda terms as defined above.
 
-        # Apply the successor function 'self' times. We chose this method instead of the naive method, due to lower computation time. Three times as fast than the one below.
+        # Apply the successor function 'self' times. We chose this method instead of the naive method, due to lower computation time.
+
         self_number = LambdaTerm.toNumber(self)
         other_number = LambdaTerm.toNumber(other)
 
@@ -75,140 +137,10 @@ class LambdaTerm:
                 self = LambdaTerm.successor(self)
             return self
 
-        # self_number = LambdaTerm.toNumber(self)
-        # other_number = LambdaTerm.toNumber(other)
-
-        # number = self_number + other_number
-        # lambda_number = LambdaTerm.fromNumber(number)
-        # return lambda_number
-
     def __mul__(self, other):
-        # multiplication of two numbers x and y
+        '''Multiplication of two (lambda) numbers x and y'''
 
         return (Abstraction(Variable('x'), Abstraction(Variable('w'), Abstraction(Variable('y'), Application(Variable('x'), Application(Variable('w'), Variable('y'))))))(self).reduce())(other).reduce()
-
-
-##########################################################################################################################################
-####### BASIC FUNCTIONS #######
-##########################################################################################################################################
-
-        # new_string_list = string.split(' ')
-
-        # for i in range(len(new_string_list)):
-        #     if new_string_list[i][0] == 'λ':
-        #         variable = Variable(new_string_list[i][1])
-        #         body = LambdaTerm.fromString(new_string_list[i][3:])
-        #         new_string_list[i] = Abstraction(variable, body)
-        #     else:
-        #         new_string_list[i] = Variable(new_string_list[i])
-
-        # for i in range(len(new_string_list)-1):
-        #     new_string_list[0] = Application(
-        #         new_string_list[0], new_string_list[1+i])
-
-        # output = new_string_list[0]
-        # return output
-
-    @staticmethod
-    def fromString(string):
-        """Construct a lambda term from a string."""
-        def fromStringtoRepr(string2):
-            for i, j in enumerate(string2):
-                if j == 'λ':
-                    return f"Abstraction(Variable('{string2[i+1]}'), {fromStringtoRepr(string2[i+3:])})"
-                elif j == '(':
-                    tracker = 0
-                    for k, l in enumerate(string2[i+1:]):
-                        if l == '(':
-                            tracker += 1
-                        elif l == ')':
-                            tracker -= 1
-                        elif l == ' ':
-                            if tracker == 0:
-                                return f"Application({fromStringtoRepr(string2[i+1:k+1])}, {fromStringtoRepr(string2[k+2:-1])})"
-
-                else:
-                    return f"Variable('{j}')"
-        return eval(fromStringtoRepr(string))
-
-    @staticmethod
-    def alphaConversion(**kwargs):
-        """Change the symbols in your lambda term with new ones.\n
-        \n
-        The first argument has to be a lambda term and the following arguments should be the symbol you want to replace and the symbol replacing that symbol.\n
-        \n
-        Example: LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='e', symbol2='b', replacesymbol2='f')"""
-
-        keys = list(kwargs)
-        values = list(kwargs.values())
-        for i in range(1, len(keys), 2):
-            LambdaTerm_repr = repr(values[0])
-            # We want to replace the letters in quotation marks: 'a', 'x' etc.
-            LambdaTerm_repr = LambdaTerm_repr.replace(
-                f"'{values[i]}'", f"'{values[i+1]}'")
-            values[0] = eval(LambdaTerm_repr)
-        return eval(LambdaTerm_repr)
-
-    def reduce(self):
-        """Beta-reduce."""
-        # loop/recursion while applying the substitute function. If the previous substitute gives the same one as the current, then return (i.e. if it is nonreducible).
-        lijst = [self.substitute()]
-        while True:
-            lijst.append(lijst[-1].substitute())
-            if repr(lijst[-2]) == repr(lijst[-1]):
-                break
-        return lijst[-1]
-
-    def __eq__(self, other):
-        self = str(self.reduce())
-        other = str(other.reduce())
-        if len(self) != len(other):
-            return False
-        lijst = []
-        for i in range(len(self)):
-            lijst.append([self[i], other[i]])
-            if i > 0:
-                for j in range(i-1):
-                    if lijst[j][0] == self[i] and lijst[j][1] != other[i]:
-                        return False
-        return True
-
-    def __eq__(self, other):
-        """Alpha-equivalence"""
-
-        self = str(self.reduce())
-        other = str(other.reduce())
-
-        letters_self = ''
-        letters_other = ''
-
-        database = string.ascii_letters
-        used_letters_self = []
-        used_letters_other = []
-
-        if len(self) != len(other):
-            return False
-
-        for i in range(len(self)):
-            if self[i] not in used_letters_self:
-                if self[i] in database:
-                    letters_self += self[i]
-                    used_letters_self.append(self[i])
-
-        for i in range(len(other)):
-            if other[i] not in used_letters_other:
-                if other[i] in database:
-                    letters_other += other[i]
-                    used_letters_other.append(other[i])
-
-        for i in range(len(used_letters_self)):
-            self = self.replace(letters_self[i], database[i])
-            other = other.replace(letters_other[i], database[i])
-
-        if self == other:
-            return True
-        else:
-            return False
 
 
 class Variable(LambdaTerm):
@@ -244,14 +176,14 @@ class Abstraction(LambdaTerm):
         return Application(self, argument).reduce()
 
     def substitute(self, argument='0'):
-        # λx.M: Check if an argument was given. If an argument was given, then replace the body of the abstraction by the argument and return only that body. Else return itself with its argument reduced (if possible).
+        # λx.M: Checks if an argument was given. If an argument was given, then replace the body of the abstraction by the argument and return only that body. Else return itself with its argument reduced (if possible).
 
         if str(argument) != '0':
             self_repr = repr(self.body).replace(
                 repr(self.variable), repr(argument))
             return eval(self_repr)
         else:
-            return Abstraction(self.variable.substitute(), self.body.substitute())
+            return Abstraction(self.variable, self.body.substitute())
 
 
 class Application(LambdaTerm):
@@ -276,42 +208,50 @@ class Application(LambdaTerm):
             return Application(self.function.substitute(), self.argument.substitute())
 
 
-# Own programming language
-# Natural numbers
-zero = Abstraction(Variable('s'), Abstraction(Variable('f'), Variable('f')))
-I = Abstraction(Variable('x'), Variable('x'))
-successor = Abstraction(Variable('w'), Abstraction(Variable('y'), Abstraction(Variable('x'), Application(
-    Variable('y'), Application(Application(Variable('w'), Variable('y')), Variable('x'))))))
+######################################################################################################
+####### BASIC DEFINITIONS #######
+######################################################################################################
+
+# 0
+zero = LambdaTerm.fromString('λs.λf.f')
+
+# The identity function
+I = LambdaTerm.fromString('λx.x')
+
+# The successor function. Will need it later.
+successor = LambdaTerm.fromString('λw.λy.λx.(y ((w y) x))')
 
 
 ######################################################################################################
 ####### CONDITIONALS #######
 ######################################################################################################
 
-
 T = LambdaTerm.fromString('λc.λd.c')
 F = LambdaTerm.fromString('λa.λb.b')
 
-And = Abstraction(Variable('x'), Abstraction(
-    Variable('y'), Application(Application(Variable('x'), Variable('y')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a',
-                                                                                                     replacesymbol='e', symbol2='b', replacesymbol2='f'))))
-Or = Abstraction(Variable('x'), Abstraction(
-    Variable('y'), Application(Application(Variable('x'), LambdaTerm.alphaConversion(LambdaTerm=T, symbol='c', replacesymbol='k', symbol2='d', replacesymbol2='l')), Variable('y'))))
-negation = Abstraction(Variable('x'), Application(
-    Application(Variable('x'), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a',
-                                                          replacesymbol='g', symbol2='b', replacesymbol2='h')), LambdaTerm.alphaConversion(LambdaTerm=T, symbol='c',
-                                                                                                                                           replacesymbol='i', symbol2='d', replacesymbol2='j')))
-# 0: True, other numbers are false.
-conditional_test = Abstraction(Variable('i'), Application(Application(Application(Variable('i'), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='j', symbol2='b', replacesymbol2='k')),
-                               LambdaTerm.alphaConversion(LambdaTerm=negation, symbol='x', replacesymbol='l')), LambdaTerm.alphaConversion(LambdaTerm=F, symbol='a', replacesymbol='m', symbol2='b', replacesymbol2='o')))
+# λx.(λy.((x y) F))
+And = LambdaTerm.fromString(f'λr.λs.((r s) λp.λq.q)')
 
+# λx.(λy.((x T) y))
+Or = LambdaTerm.fromString(f'λt.λu.((t λv.λw.v) u)')
+
+# λx.((x F) T)
+negation = LambdaTerm.fromString(f'λx.((x λe.λf.f) λg.λh.g)')
+
+
+# 0: True, other numbers are false.
+# λi.(((i F) negation) F)
+conditional_test = LambdaTerm.fromString(
+    f'λi.(((i λj.λk.k) {negation}) λl.λm.m)')
+
+
+# NOTE: Not usable (yet)
 # phi generates from the pair p = (n,n-1) the pair (n+1,n-1)
-# uses symbols = w,x,y,z,p,c,d
 phi = LambdaTerm.fromString(
     f'λp.λz.((z ({successor} (p {T}))) (p {T}))')
 
-# the predecessor of a number n. Applies the phi n times to (λz.z00) and then selects the second member of the pair
-# uses symbols = w,x,y,z,p,c,d,n,a,b,e,f,s
+# NOTE: Not usable (yet)
+# the predecessor of a number n. Applies the phi n times to (λz.((z 0) 0)) and then selects the second member of the pair
 P = LambdaTerm.fromString(
     f'(λn.((n {phi}) λe.((e {zero}) {zero})) {F})')
 
@@ -320,79 +260,9 @@ P = LambdaTerm.fromString(
 ####### RECURSION #######
 ######################################################################################################
 
-recursion = LambdaTerm.fromString('λg.(λh.(g (h h)) λh.(g (h h)))')
+# This is untyped lambda calculus, so recursion will not terminate.
+recursion = LambdaTerm.fromString('λn.(λo.(n (o o)) λo.(n (o o)))')
 
-# uses symbols = w,x,y,z,p,c,d,n,a,b,e,f,s,g,h,
+# NOTE: Not usable (yet)
 recursive_sum = LambdaTerm.fromString(
     f'λr.λn.((({conditional_test} n) {zero}) ((n {successor}) (r ({P} n))))')
-
-
-print(LambdaTerm.fromNumber(100)
-      == LambdaTerm.fromNumber(100))
-
-# Reduce() doesn't work with recursion. Recursion depth.
-print(Application(recursion, Variable('g')).substitute(
-).substitute())
-
-
-# print(negation(T).reduce() == F)
-# print(conditional_test(LambdaTerm.fromNumber(1)) == F)
-# print(LambdaTerm.fromString('(λw.λy.λx.(y ((w y) x)) λs.λz.(s z))')
-#       == LambdaTerm.fromNumber(100))
-
-# print(Application(Application(recursion, recursive_sum),
-#       LambdaTerm.fromNumber(1)).substitute())
-
-
-# print(LambdaTerm.fromstring('lx.y q ly.y z')
-#      == LambdaTerm.fromstring('x lx.x q'))
-
-
-# haakjes uitwerken
-
-# text = input()
-# diepte = 0
-# haakjes = text.count("(")
-# print(haakjes)
-# for i in range(haakjes):
-#     dieptelijst = []
-#     for i in range(len(text)):
-#         if text[i] == "(":
-#             diepte += 1
-#         elif text[i] == ")":
-#             diepte -= 1
-#         dieptelijst.append(diepte)
-#     print(dieptelijst)
-#     grootste = 0
-#     for i in range(len(dieptelijst)):
-#         if dieptelijst[i] > grootste:
-#             grootste = dieptelijst[i]
-#     grootstespot = False
-#     grootserange = 0
-#     spotlijst = []
-#     for i in range(len(dieptelijst)):
-#         if dieptelijst[i] == grootste:
-#             grootstespot = True
-#             spotlijst.append(i)
-#         elif dieptelijst[i] != grootste and grootstespot == True:
-#             spotlijst.append(i)
-#             break
-#     print(spotlijst)
-
-#     origineel = ""
-#     vervanging = ""
-#     for i in range(spotlijst[0], spotlijst[-1]+1):
-#         origineel += text[i]
-#     print(origineel)
-#     vervanging = origineel.lstrip("(").rstrip(")")
-
-#     text = text.replace(origineel, vervanging)
-#     print(text)
-
-
-new_zero = LambdaTerm.alphaConversion(
-    LambdaTerm=zero, symbol='s', replacesymbol='p', symbol2='f', replacesymbol2='q')
-
-
-# 1. 8.893013000488281e-05, 0.00040221214294433594
-# 2. 9.608268737792969e-05, 0.004765033721923828 8% langzamer, 1000% langzamer
