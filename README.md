@@ -1,12 +1,12 @@
 # Lambda Calculus in Python
 
 > [!NOTE]
-> This code is not fully completed (yet). To see what is missing, see the chapter 'Discussion' in "Lambda Calculus.pdf". 
+> This code is not fully completed (yet). To see what is missing, see the chapter 'Discussion' in "Lambda_Calculus.pdf". 
 
 
 ## Why?
 
-The motivation behind this code is for people to learn about lambda calculus and functional programming and play with it, with only a basic background in Python. Functional programming is considered an advanced topic in computer science, but with our code, we hope that the basic concepts behind it will be accessible to curious beginners. For more information about the basics of lambda calculus and its rules, we refer you to the file "Lambda Calculus.pdf" which can be found in this repository.
+The motivation behind this code is for people to learn about lambda calculus and functional programming and play with it, with only a basic background in Python. Functional programming is considered an advanced topic in computer science, but with our code, we hope that the basic concepts behind it will be accessible to curious beginners. For more information about the basics of lambda calculus and its rules, we refer you to the file "Lambda_Calculus.pdf" which can be found in this repository.
 
 ## What can you do with our code?
 We have implemented several methods from lambda calculus into Python, which we list below. We will explain how to use them in the next chapter.
@@ -15,14 +15,14 @@ We have implemented several methods from lambda calculus into Python, which we l
 * alphaConversion: convert a variable letter
 * reduce: this method constantly subsitutes terms inside lambda terms to _bèta-reduce_ the lambda term.
 * \_\_eq\_\_ (alpha-equivalence): this method, which can be called by using the '=='-symbol between lambda terms, checks whether two lambda terms are alpha-equivalent to each other.
-* Arithmetic operations: we implemented basic arithmetic operations using the Church encoding for natural numbers and addition and multiplication between them. For the definition of the Church encoding for natural numbers, we refer you to "Lambda Calculus.pdf".
+* Arithmetic operations: we implemented basic arithmetic operations using the Church encoding for natural numbers and addition and multiplication between them. For the definition of the Church encoding for natural numbers, we refer you to "Lambda_Calculus.pdf".
   * successor: returns the successor of the natural number.
   * fromNumber: converts a natural number to a lambda term.
   * toNumber: converts a natural number as a lambda term to a natural number.
-* Conditionals: basic conditionals such as True, False, AND, OR, negation, conditional test, recursion, and recursive sum. For these definitions, we refer you to our Python code or "Lambda Calculus.pdf". It's also possible to define simple to write simple conditional statements such as "If P then A, else B". We note however that recursion and recursive sum are not fully functional (yet) since we haven't fully resolved all problems in this code yet. For more information, see the chapter 'Discussion' in "Lambda Calculus.pdf". 
+* Conditionals: basic conditionals such as True, False, AND, OR, negation, conditional test, recursion, and recursive sum. For these definitions, we refer you to our Python code or "Lambda_Calculus.pdf". It's also possible to define simple to write simple conditional statements such as "If P then A, else B". We note however that recursion and recursive sum are not fully functional (yet) since we haven't fully resolved all problems in this code yet. For more information, see the chapter 'Discussion' in "Lambda_Calculus.pdf". 
 
 ## How can you use it?
-For our full breakdown and explanation of the code and lambda calculus, we refer you to the file "Lambda Calculus.pdf". Here, we provide several small examples of how you can use our code.
+For our full breakdown and explanation of the code and lambda calculus, we refer you to the file "Lambda_Calculus.pdf". Here, we provide several small examples of how you can use our code.
 
 ### Creating Lambda Terms
 **Variables**
